@@ -13,9 +13,9 @@ class Tuchong(object):
 
     def __init__(self, home_url):
         self.home_url = home_url # 如'https://tuchong.com/13044147/posts/'或'tuchong.com/13044147/posts'或'https://asamurai.tuchong.com/posts'
-        id = re.findall('\\d+', home_url)[0] # 如'13044147'
+        id = re.findall('\\d+', home_url) # 如'13044147'
         if id:
-            self.user_id = id
+            self.user_id = id[0]
         else: # to deal with 'https://asamurai.tuchong.com/posts' etc. 
             html = requests.get(home_url).text
             self.user_id = re.findall('"site_id":"(\\d+)"', html)[0]
@@ -143,6 +143,7 @@ class Tuchong(object):
         return post_urls
 
     def get_image_urls(self, sort = True):
+        print('正在提取用户"' + self.username + '"的所有图片链接...')
         if sort:
             image_urls = {}
             for post in self.post_list:
@@ -152,12 +153,15 @@ class Tuchong(object):
                     this_image_urls.append(image_url)
                 key = post["published_at"][0:10] + '-' + post['post_id']
                 image_urls.update({key:this_image_urls})
+            print('完成。')
             return image_urls
         else:
             image_urls = re.findall("'lr': '(.+?)',", str(self.post_list))
+            print('完成。')
             return(image_urls)
 
     def get_images(self, sort = True):
+        print('正在下载用户"' + self.username + '"的所有图片...')
         if sort:
             # get urls as {time-post_id_1:[url1, url2], time-post_id_2:[url1, url2, ...], ...}
             key_and_urls = self.get_image_urls(sort = True) 
@@ -166,17 +170,25 @@ class Tuchong(object):
             if not os.path.exists(path):
                 os.mkdir(path)
             # get images
+            total_posts_n = len(key_and_urls)
+            count = 1
             for key, url_list in key_and_urls.items():
+                print('正在下载第"' + str(count) + '/' + str(total_posts_n) + '"组图片...'); count += 1
                 path_post = path + key + '/'
                 if not os.path.exists(path_post):
                     os.mkdir(path_post)
                 for i, url in enumerate(url_list, start=1):
-                    urllib.request.urlretrieve(url, path_post + str(i) + '.jpg')
+                    # urllib.request.urlretrieve(url, path_post + str(i) + '.jpg')
+                    with open(path_post + str(i) + '.jpg', 'wb') as img:
+                        img.write(requests.get(url).content)
+            print('完成。')
         else:
             if not os.path.exists('img/'):
                 os.mkdir('img/')
             for i, url in enumerate(self.get_image_urls(sort = False)):
+                print('正在下载第' + str(i) + '张图片。')
                 urllib.request.urlretrieve(url, 'img/' + self.username + '-' + str(i) + '.jpg')
+            print('完成。')
 
 if __name__ == "__main__":
     print('欢迎使用石天熠的图虫信息爬取程序。在命令行使用时，可以用于\n\t（1）下载某个作者的全部图片，或者\n\t（2）获取作者及其全部作品的信息，并以json或csv格式保存。')
