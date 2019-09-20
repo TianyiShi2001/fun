@@ -1,10 +1,11 @@
-baseurl = "/"
+baseurl = ""
 languageCode = "zh-cn"
 title = "A Hugo website"
 theme = "hugo-lithium"
 googleAnalytics = ""
 disqusShortname = ""
 publishDir = "docs"
+relativeURLs = true
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [permalinks]
@@ -12,7 +13,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [[menu.main]]
     name = "关于"
-    url = "/about/"
+    url = "about/"
 [[menu.main]]
     name = "GitHub"
     url = "https://github.com/TianyiShi2001/fun"
