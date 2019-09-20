@@ -7,19 +7,21 @@ tags: ["R Markdown", "plot", "regression"]
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE)
+knitr::opts_chunk$set(collapse = FALSE, eval = FALSE)
 ```
 
-# R Markdown
+# python批量下载图虫网单个作者所有图片
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## 动机
 
-You can embed an R code chunk like this:
+想转行生物信息学，最近在学python. 我也是个摄影爱好者，在图虫上关注了一些作者，很喜欢他们的拍摄手法。图虫网不仅能查看照片，还能解析exif元数据。我希望能够把我喜欢的照片和它们的exif
 
-```{r cars}
-summary(cars)
-fit <- lm(dist ~ speed, data = cars)
-fit
+## 说明
+
+## 方法
+
+```{python eval=FALSE}
+import requests
 ```
 
 # Including Plots

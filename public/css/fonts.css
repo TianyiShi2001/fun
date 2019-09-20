@@ -1,4 +1,4 @@
-@font-face {
+/* @font-face {
   font-family: 'Merriweather';
   font-style: normal;
   font-weight: 400;
@@ -14,9 +14,18 @@
        url('../fonts/lato-v11-latin-regular.woff2') format('woff2'),
        url('../fonts/lato-v11-latin-regular.woff') format('woff');
 }
+*/
+
+/*font weight 300 400 700*/
+
+
 body {
-  font-family: 'Merriweather', serif;
+  font-family: source-han-serif-sc, serif;
+  font-weight: 300;
+  font-style: normal;
 }
 h1, h2, h3, h4, h5, h6, .nav, .article-duration, .archive-item-link, .footer {
-  font-family: 'Lato', sans-serif;
+  font-family: source-han-sans-simplified-c, sans-serif;
+  font-weight: 500;
+  font-style: normal;
 }
