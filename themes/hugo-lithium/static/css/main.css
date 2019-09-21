@@ -319,3 +319,7 @@ code {
     box-shadow: none;
   }
 }
+
+.figure img, p img {
+  width: 100%;
+}

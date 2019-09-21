@@ -6,19 +6,19 @@
     <description>Recent content in R on A Hugo website</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 23 Jul 2015 21:13:14 -0500</lastBuildDate>
+    <lastBuildDate>Tue, 01 Oct 2019 21:13:14 -0500</lastBuildDate>
     
 	<atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Hello R Markdown</title>
-      <link>/2015/07/23/hello-r-markdown/</link>
-      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
+      <title>python批量下载图虫网单个作者所有图片</title>
+      <link>/2019/10/01/python%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD%E5%9B%BE%E8%99%AB%E7%BD%91%E5%8D%95%E4%B8%AA%E4%BD%9C%E8%80%85%E6%89%80%E6%9C%89%E5%9B%BE%E7%89%87/</link>
+      <pubDate>Tue, 01 Oct 2019 21:13:14 -0500</pubDate>
       
-      <guid>/2015/07/23/hello-r-markdown/</guid>
-      <description> python批量下载图虫网单个作者所有图片 动机 想转行生物信息学，最近在学python. 我也是个摄影爱好者，在图虫上关注了一些作者，很喜欢他们的拍摄手法。图虫网不仅能查看照片，还能解析exif元数据。我希望能够把我喜欢的照片和它们的exif
- 说明  方法 import requests   Including Plots You can also embed plots. See Figure ?? for example:
+      <guid>/2019/10/01/python%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD%E5%9B%BE%E8%99%AB%E7%BD%91%E5%8D%95%E4%B8%AA%E4%BD%9C%E8%80%85%E6%89%80%E6%9C%89%E5%9B%BE%E7%89%87/</guid>
+      <description> 动机 想转行生物信息学，最近在学python. 我也是个摄影爱好者，在图虫上关注了一些作者，很喜欢他们的拍摄手法。图虫网不仅能查看照片，还能解析exif元数据。我希望能够把我喜欢的照片和它们的exif
+ 说明  方法 import requests  Including Plots You can also embed plots. See Figure ?? for example:
 par(mar = c(0, 1, 0, 1)) pie( c(280, 60, 20), c(&amp;#39;Sky&amp;#39;, &amp;#39;Sunny side of pyramid&amp;#39;, &amp;#39;Shady side of pyramid&amp;#39;), col = c(&amp;#39;#0292D8&amp;#39;, &amp;#39;#F7EA39&amp;#39;, &amp;#39;#C4B632&amp;#39;), init.angle = -50, border = NA )  </description>
     </item>
     

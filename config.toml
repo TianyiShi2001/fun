@@ -1,6 +1,6 @@
-baseurl = ""
+baseurl = "https://TianyiShi2001.github.io/fun/"
 languageCode = "zh-cn"
-title = "A Hugo website"
+title = "石天熠"
 theme = "hugo-lithium"
 googleAnalytics = ""
 disqusShortname = ""
@@ -13,7 +13,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [[menu.main]]
     name = "关于"
-    url = "about/"
+    url = "/about/"
 [[menu.main]]
     name = "GitHub"
     url = "https://github.com/TianyiShi2001/fun"

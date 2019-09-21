@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Categories on A Hugo website</title>
+    <title>Categories on 石天熠</title>
     <link>/categories/</link>
-    <description>Recent content in Categories on A Hugo website</description>
+    <description>Recent content in Categories on 石天熠</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 23 Jul 2015 21:13:14 -0500</lastBuildDate>
+    <lastBuildDate>Tue, 01 Oct 2019 21:13:14 -0500</lastBuildDate>
     
 	<atom:link href="/categories/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>R</title>
-      <link>/categories/r/</link>
-      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
+      <title>python</title>
+      <link>/categories/python/</link>
+      <pubDate>Tue, 01 Oct 2019 21:13:14 -0500</pubDate>
       
-      <guid>/categories/r/</guid>
+      <guid>/categories/python/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>爬虫</title>
+      <link>/categories/%E7%88%AC%E8%99%AB/</link>
+      <pubDate>Tue, 01 Oct 2019 21:13:14 -0500</pubDate>
+      
+      <guid>/categories/%E7%88%AC%E8%99%AB/</guid>
       <description></description>
     </item>
     

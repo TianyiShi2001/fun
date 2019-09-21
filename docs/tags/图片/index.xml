@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>图片 on 石天熠</title>
+    <link>/tags/%E5%9B%BE%E7%89%87/</link>
+    <description>Recent content in 图片 on 石天熠</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Tue, 01 Oct 2019 21:13:14 -0500</lastBuildDate>
+    
+	<atom:link href="/tags/%E5%9B%BE%E7%89%87/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>python批量下载图虫网单个作者所有图片</title>
+      <link>/2019/10/01/python%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD%E5%9B%BE%E8%99%AB%E7%BD%91%E5%8D%95%E4%B8%AA%E4%BD%9C%E8%80%85%E6%89%80%E6%9C%89%E5%9B%BE%E7%89%87/</link>
+      <pubDate>Tue, 01 Oct 2019 21:13:14 -0500</pubDate>
+      
+      <guid>/2019/10/01/python%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD%E5%9B%BE%E8%99%AB%E7%BD%91%E5%8D%95%E4%B8%AA%E4%BD%9C%E8%80%85%E6%89%80%E6%9C%89%E5%9B%BE%E7%89%87/</guid>
+      <description>序 动机 想转行生物信息学，最近在学python和R. 其实还想学Julia, 但是Julia最新的版本不兼容macOS Catalina (10.15), 于是便搁置了。
+我也是个摄影爱好者，在图虫上关注了一些作者，很喜欢他们的拍摄手法。图虫网不仅能查看照片，还能解析exif元数据。我希望能够把我喜欢的照片和它们的exif元数据下载并做分析，用于学习摄影。
+ 说明 因为版权限制，这里下载的图片不是高清原图，而是最大尺寸的预览版本。我下载这些图片也仅只供个人学习使用，也希望大家不要滥用从图虫网上爬到的图片。
+ 用到的包 import requests, re, csv, json, time, sys, math, threading from wordcloud import WordCloud   目前进度和使用效果 目前的稳定功能有两个：
+下载给定用户发表的所有图片，并以&amp;quot;用户id-用户名/时间-图文id/图片序号.jpg&amp;quot;的格式分类存储。 提取给定用户及其发表的所有图文（posts）的所有信息，导出为json，并整理有用信息，如点赞数和标签（tags），导出为json或csv. 或者，在python内，返回字典。 给定用户，根据其使用的tags生成词云。   方法 首先，观察分析某个用户的图虫主页，例如 http://tuchong.com/1182492/ .
+在Chrome开发者工具的Network板块下，监视XHR请求，然后往下滑动页面。posts?count=20&amp;amp;page=1&amp;amp;before_timestamp=1568996042，posts?count=20&amp;amp;page=2&amp;amp;before_timestamp=1568996042等名称会依次出现，它们名称中的page=1, page=2尤为瞩目。正是通过这些请求，往下滑动时，更多的图片 (page 2. page 3…)被加载出来。直接在chorme中打开其中一个XHR的URL——事实上，我们可以大胆地把除了“page”以外的所有信息删掉，即使用http://tuchong.com/rest/2/sites/1182492/posts?page=1访问：
+得到的是一个结构类似于这样json（为了易读，这里进行了省略）：
+{ &amp;quot;post_list&amp;quot;: [ { &amp;quot;post_id&amp;quot;: &amp;quot;52844551&amp;quot;, &amp;quot;author_id&amp;quot;: &amp;quot;1182492&amp;quot;, &amp;quot;url&amp;quot;: &amp;quot;http://tuchong.com/1182492/52844551/&amp;quot;, &amp;quot;published_at&amp;quot;: &amp;quot;2019-09-17 16:04:44&amp;quot;, &amp;quot;excerpt&amp;quot;: &amp;quot;兔子&amp;quot;, &amp;quot;favorites&amp;quot;: 137, &amp;quot;comments&amp;quot;: 3, &amp;quot;title&amp;quot;: &amp;quot;体操服少女&amp;quot;, .</description>
+    </item>
+    
+  </channel>
+</rss>

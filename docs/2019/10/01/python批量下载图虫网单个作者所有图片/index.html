@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.57.2" />
+
+
+<title>python批量下载图虫网单个作者所有图片 - 石天熠</title>
+<meta property="og:title" content="python批量下载图虫网单个作者所有图片 - 石天熠">
+
+
+  <link href='../../../../favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="../../../../css/fonts.css" media="all">
+<link rel="stylesheet" href="../../../../css/main.css" media="all">
+
+<script>
+    (function (d) {
+        var config = {
+            kitId: 'tob8xaq',
+            scriptTimeout: 3000,
+            async: true
+        },
+            h = d.documentElement, t = setTimeout(function () { h.className = h.className.replace(/\bwf-loading\b/g, "") + " wf-inactive"; }, config.scriptTimeout), tk = d.createElement("script"), f = false, s = d.getElementsByTagName("script")[0], a; h.className += " wf-loading"; tk.src = 'https://use.typekit.net/' + config.kitId + '.js'; tk.async = true; tk.onload = tk.onreadystatechange = function () { a = this.readyState; if (f || a && a != "complete" && a != "loaded") return; f = true; clearTimeout(t); try { Typekit.load(config) } catch (e) { } }; s.parentNode.insertBefore(tk, s)
+    })(document);
+</script>
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="../../../../" class="nav-logo">
+    <img src="../../../../images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="https://github.com/TianyiShi2001/fun">GitHub</a></li>
+    
+    <li><a href="../../../../about/">关于</a></li>
+    
+    <li><a href="https://shi-tianyi.tuchong.com/posts">图虫</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">4 min read</span>
+    
+
+    <h1 class="article-title">python批量下载图虫网单个作者所有图片</h1>
+
+    
+    <span class="article-date">2019-10-01</span>
+    
+
+    <div class="article-content">
+      
+
+
+<div id="intro" class="section level2">
+<h2>序</h2>
+<div id="motivation" class="section level3">
+<h3>动机</h3>
+<p>想转行生物信息学，最近在学python和R. 其实还想学Julia, 但是Julia最新的版本不兼容macOS Catalina (10.15), 于是便搁置了。</p>
+<p>我也是个摄影爱好者，在图虫上关注了一些作者，很喜欢他们的拍摄手法。图虫网不仅能查看照片，还能解析exif元数据。我希望能够把我喜欢的照片和它们的exif元数据下载并做分析，用于学习摄影。</p>
+</div>
+<div class="section level3">
+<h3>说明</h3>
+<p>因为版权限制，这里下载的图片不是高清原图，而是最大尺寸的预览版本。我下载这些图片也仅只供个人学习使用，也希望大家不要滥用从图虫网上爬到的图片。</p>
+</div>
+<div class="section level3">
+<h3>用到的包</h3>
+<pre class="python"><code>import requests, re, csv, json, time, sys, math, threading
+from wordcloud import WordCloud</code></pre>
+</div>
+</div>
+<div class="section level2">
+<h2>目前进度和使用效果</h2>
+<p>目前的稳定功能有两个：</p>
+<ol style="list-style-type: decimal">
+<li>下载给定用户发表的所有图片，并以<code>&quot;用户id-用户名/时间-图文id/图片序号.jpg&quot;</code>的格式分类存储。</li>
+<li>提取给定用户及其发表的所有图文（posts）的所有信息，导出为json，并整理有用信息，如点赞数和标签（tags），导出为json或csv. 或者，在python内，返回字典。</li>
+<li>给定用户，根据其使用的tags生成词云。</li>
+</ol>
+</div>
+<div class="section level2">
+<h2>方法</h2>
+<p>首先，观察分析某个用户的图虫主页，例如 <a href="http://tuchong.com/1182492/" class="uri">http://tuchong.com/1182492/</a> .</p>
+<p><img src="../../../../img/tuchong/common.png" /></p>
+<p>在Chrome开发者工具的Network板块下，监视XHR请求，然后往下滑动页面。<code>posts?count=20&amp;page=1&amp;before_timestamp=1568996042</code>，<code>posts?count=20&amp;page=2&amp;before_timestamp=1568996042</code>等名称会依次出现，它们名称中的<code>page=1</code>, <code>page=2</code>尤为瞩目。正是通过这些请求，往下滑动时，更多的图片 (page 2. page 3…)被加载出来。直接在chorme中打开其中一个XHR的URL——事实上，我们可以大胆地把除了“page”以外的所有信息删掉，即使用<code>http://tuchong.com/rest/2/sites/1182492/posts?page=1</code>访问：</p>
+<p>得到的是一个结构类似于这样json（为了易读，这里进行了省略）：</p>
+<pre class="json"><code>{
+  &quot;post_list&quot;: [
+    {
+      &quot;post_id&quot;: &quot;52844551&quot;,
+      &quot;author_id&quot;: &quot;1182492&quot;,
+      &quot;url&quot;: &quot;http://tuchong.com/1182492/52844551/&quot;,
+      &quot;published_at&quot;: &quot;2019-09-17 16:04:44&quot;,
+      &quot;excerpt&quot;: &quot;兔子&quot;,
+      &quot;favorites&quot;: 137,
+      &quot;comments&quot;: 3,
+      &quot;title&quot;: &quot;体操服少女&quot;,
+      ...
+      &quot;images&quot;: [
+        {
+          &quot;img_id&quot;: 482124473,
+          &quot;img_id_str&quot;: &quot;482124473&quot;,
+          ...
+          &quot;source&quot;: {
+            &quot;s&quot;: &quot;https://tuchong.pstatp.com/1182492/s/482124473.webp&quot;,
+            &quot;m&quot;: &quot;https://tuchong.pstatp.com/1182492/m/482124473.webp&quot;,
+            &quot;l&quot;: &quot;https://tuchong.pstatp.com/1182492/l/482124473.webp&quot;,
+            ...
+          },
+        },
+        ...
+      ],
+      &quot;tags&quot;: [
+        {
+          &quot;tag_id&quot;: 568650,
+          &quot;type&quot;: &quot;event&quot;,
+          &quot;tag_name&quot;: &quot;分享神仙颜值&quot;,
+          ...
+        },
+        ...
+      ],
+      &quot;site&quot;: {
+        &quot;site_id&quot;: &quot;1182492&quot;,
+        &quot;type&quot;: &quot;user&quot;,
+        &quot;name&quot;: &quot;KINGVISION&quot;,
+        &quot;description&quot;: &quot;资深人像摄影师&quot;,
+        &quot;followers&quot;: 6995,
+        ...
+    },
+    ...
+  ],
+  ...
+}
+</code></pre>
+<p>可以看到，对我们有用的信息，如用户id，用户名，图文（post）id和每条图文的所有图片信息（包括链接）和tags，都规整地被存储在<code>post_list</code>中</p>
+<p>接下来再把URL结尾的<code>page=1</code>改成<code>page=2</code>，再次访问，以此类推，果不其然地得到了更多的信息。直到当请求的页数大于最大页数时，返回的json信息为：</p>
+<pre class="json"><code>{
+  post_list: [ ],
+  before_timestamp: 1568996042,
+  more: false,
+  counts: 95,
+  result: &quot;SUCCESS&quot;
+}</code></pre>
+<p>这样一来思路就很清晰了，只需要不断从<code>https://tuchong.com/rest/2/sites/&lt;user_id&gt;/posts?page=&lt;n&gt;</code>所返回的json中的<code>post_list</code>中抓取信息，不断增加页数直到<code>post_list</code>为空：</p>
+<pre class="python"><code>class Tuchong(object):
+
+    def __init__(self, home_url):
+        self.home_url = home_url # 如&#39;https://tuchong.com/13044147/posts/&#39;或&#39;tuchong.com/13044147/posts&#39;
+        id = re.findall(r&#39;/(\d+)/&#39;, home_url) # 通过正则表达找到user_id，如&#39;13044147&#39;
+        self.user_id = id[0]
+        
+    def get_post_list_raw(self):
+        print(&#39;正在抓取id为&quot;&#39; + self.user_id + &#39;&quot;的用户的所有作品的源信息...&#39;)
+
+        page_number = 1
+        post_list = [] # 所有页的`post_list`的集合
+        while True:
+            j = requests.get(&#39;https://tuchong.com/rest/2/sites/&#39; + self.user_id + &#39;/posts?&amp;page=&#39; + str(page_number)).json() # requests自带的json转字典的方法
+            next_post_list = j[&#39;post_list&#39;]
+
+            if next_post_list: # 若page_number大于最大页数，j[&#39;post_list&#39;]将为空
+                post_list += next_post_list
+                page_number += 1
+            else:
+                print(&#39;完成。&#39;)
+                return post_list</code></pre>
+<p>把包含该作者所有作品信息的<code>post_list</code>搞到之后，我们就可以为所欲为。</p>
+<div id="__init__" class="section level3">
+<h3>修缮<code>__init__()</code>方法</h3>
+<p>由于接下来有意义的工作全部建立于<code>post_list</code>字典之上，所以初始化的时候就可以执行<code>get_post_list_raw()</code>并把结果和一些用户信息保存为实例变量：</p>
+<pre class="python"><code>def __init__(self, home_url):
+        self.home_url = home_url
+        id = re.findall(r&#39;/(\d+)/&#39;, home_url)
+        self.user_id = id[0]
+        self.post_list = self.get_post_list_raw()
+        self.username = self.post_list[0][&#39;site&#39;][&#39;name&#39;]
+        self.followers = self.post_list[0][&#39;site&#39;][&#39;followers&#39;]</code></pre>
+<p>另外，注意到有些用户设置了自定义二级域名，他们的主页URL是这样的：<code>https://rhine.tuchong.com</code> ，显然不能直接从主页URL中提取id. 通过分析源码和尝试，发现用户id其实就是出现多次的<code>site_id</code>，并且和普通用户一样可以通过<code>https://tuchong.com/rest/2/sites/&lt;user_id&gt;/posts?page=&lt;n&gt;</code> 获取包含作品信息的json：</p>
+<p><img src="../../../../img/tuchong/special.png" /></p>
+<p>因此我们可以这样改进<code>__init__()</code>方法，使之当无法直接通过URL获取用户id时候，通过访问页面并查找页面上紧跟<code>&quot;site_id&quot;：</code>之后的数字获取它：</p>
+<pre class="python"><code>def __init__(self, home_url):
+        self.home_url = home_url
+        id = re.findall(r&#39;/(\d+)/&#39;, home_url)
+        if id: # if id found directly in URL
+            self.user_id = id[0]
+        else: # to deal with &#39;https://asamurai.tuchong.com/posts&#39; etc.
+            html = requests.get(home_url).text
+            self.user_id = re.findall(&#39;&quot;site_id&quot;:&quot;(\\d+)&quot;&#39;, html)[0]
+        ...</code></pre>
+</div>
+<div class="section level3">
+<h3>下载图片</h3>
+<div class="section level4">
+<h4>获取图片链接</h4>
+<p>在源json或者转换成的字典中我们看到，每个图片的链接都是<code>&lt;https://tuchong.pstatp.com/&lt;user_id&gt;/&lt;size&gt;/&lt;image_id&gt;.jpg</code>的格式（或者以<code>.webp</code>结尾<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>）：</p>
+<pre class="python"><code># 这是抓取完成后的self.post_list字典
+[
+  {
+    &#39;post_id&#39;: &quot;52909191&quot;,
+    ...
+    &#39;images&#39;: [
+      {
+        &#39;img_id&#39;: 219325503,
+        ....
+        source: {
+        &#39;t&#39;: &quot;https://tuchong.pstatp.com/1182492/t/219325503.jpg&quot;,
+        &#39;g&#39;: &quot;https://tuchong.pstatp.com/1182492/g/219325503.jpg&quot;,
+        &#39;s&#39;: &quot;https://tuchong.pstatp.com/1182492/s/219325503.jpg&quot;,
+        &#39;m&#39;: &quot;https://tuchong.pstatp.com/1182492/m/219325503.jpg&quot;,
+        &#39;mr&#39;: &quot;https://tuchong.pstatp.com/1182492/mr/219325503.jpg&quot;,
+        &#39;l&#39;: &quot;https://tuchong.pstatp.com/1182492/l/219325503.jpg&quot;,
+        &#39;lr&#39;: &quot;https://tuchong.pstatp.com/1182492/lr/219325503.jpg&quot;,
+        &#39;ft640&#39;: &quot;https://tuchong.pstatp.com/1182492/ft640/219325503.jpg&quot;
+      },
+      ...
+    ],
+    ...
+  },
+  ...
+]</code></pre>
+<p>哪种格式的图片最大呢？通过逐个尝试，发现<code>lr</code>尺寸是最大的，但也最大只有<code>900*600</code>，即54万像素，太低了。这真的是最大尺寸的预览图了吗？我点进去某组图片认真欣赏，心想这个观看模式下的图肯定比<code>900*600</code>的预览图大，那么这些大图的源是什么呢？</p>
+<p><img src="../../../../img/tuchong/img-f.png" /></p>
+<p>发现其实图片链接的格式仍然一样，只是使用了一个不在json中指明的尺寸，即<code>/f/</code> (full). 这个图片有<code>1200*800</code>，勉强迈入了高清 (720p)的范畴。 于是我们知道，最大预览图的下载链接为<code>&lt;https://tuchong.pstatp.com/&lt;user_id&gt;/f/&lt;image_id&gt;.jpg</code> ,因此可以写出获取图片链接的方法</p>
+<pre class="python"><code>def get_image_urls(self, sort = True):
+    print(&#39;正在提取用户&quot;&#39; + self.username + &#39;&quot;的所有图片链接...&#39;)
+    if sort: # 根据post信息分类
+        id_and_image_urls = {}
+        for post in self.post_list:
+            this_post_urls = [] # each post can have multiple images
+            for image in post[&#39;images&#39;]: # looping over the list of images of this post
+                image_url = image[&#39;source&#39;][&#39;lr&#39;] # e.g. https://tuchong.pstatp.com/33937/lr/397648555.jpg
+                image_url = re.sub(&#39;/lr/&#39;, &#39;/f/&#39;, image_url) # convert to &#39;full&#39; size
+                this_post_urls.append(image_url)
+            id = post[&quot;published_at&quot;][0:10] + &#39;-&#39; + post[&#39;post_id&#39;] # 时间和post_id作为id
+            id_and_image_urls.update({id:this_post_urls})
+        print(&#39;完成。&#39;)
+        return id_and_image_urls
+    else: # 不分类，直接把所有链接存在一个列表中
+        image_urls = re.findall(&quot;&#39;lr&#39;: &#39;(.+?)&#39;,&quot;, str(self.post_list))
+        image_urls = map(lambda image_url:re.sub(&#39;/lr/&#39;, &#39;/f/&#39;, image_url), image_urls)
+        print(&#39;完成。&#39;)
+        return(image_urls)</code></pre>
+</div>
+</div>
+<div id="-1" class="section level3">
+<h3>下载图片</h3>
+<p>通过上面定义的<code>get_image_urls()</code>得到图片链接字典/列表，然后用<code>requests.get()</code>打开图片链接，最后用<code>wb</code>（二进制写入）模式把<code>.content</code>写入<code>.jpg</code>文件就行了。另外需要考虑的是创建文件夹和多线程下载。具体代码：</p>
+<pre class="python"><code>def get_images(self, threads = &#39;auto&#39;, sort = True):
+    print(&#39;正在下载用户&quot;&#39; + self.username + &#39;&quot;的所有图片...&#39;)
+    
+    # 创建存放图片的文件夹，名为`&lt;用户id&gt;-&lt;用户名&gt;`
+    path = self.user_id + &#39;-&#39; + self.username + &#39;/&#39;
+    if not os.path.exists(path):
+            os.mkdir(path)
+
+    if sort: # 需要整理
+        # get urls as {time-post_id_1:[url1, url2], time-post_id_2:[url1, url2, ...], ...}
+        id_and_urls = self.get_image_urls(sort = True)
+        
+        # 决定线程数
+        if isinstance(threads, int): # 如果指定线程数
+            threads = threads
+        else: # 默认的自动
+            l = len(id_and_urls)
+            if l == 0:
+                raise ValueError(&#39;此用户没有发布图片！&#39;)
+            threads = math.ceil(l/3)
+            if threads &gt; 10:
+                threads = 10
+                
+        # 不断下载id_and_urls中的posts
+        def download_post():
+            try:
+                 this_post = id_and_urls.popitem()
+            except KeyError:
+                sys.exit() # 结束线程
+            id, url_s = this_post[0], this_post[1]
+            total = len(url_s)
+            print(&#39;正在下载post&#39;, id)
+            subdir = path + id + &#39;/&#39;
+            if not os.path.exists(subdir):
+                os.mkdir(subdir)
+            for i, url in enumerate(url_s, start=1):
+                    # urllib.request.urlretrieve(url, subdir + str(i) + &#39;.jpg&#39;)
+                    with open(subdir + str(i) + &#39;.jpg&#39;, &#39;wb&#39;) as img:
+                        img.write(requests.get(url).content)
+                        print(i, &#39;/&#39;, total, &#39; of post &#39;, id, &#39; from &#39;, threading.current_thread().name, sep=&#39;&#39;)
+            download_post() # 递归
+            
+        # 多线程
+
+        t_s = []
+
+        for i in range(threads):
+            t = threading.Thread(target=download_post)
+            t_s.append(t)
+        for t in t_s:
+            t.start()
+        for t in t_s:
+            t.join()
+
+        print(&#39;完成。&#39;)
+    else: # 如果不需要整理
+        image_urls = self.get_image_urls(sort = False)
+
+        if isinstance(threads, int): # 如果指定线程数
+            threads = threads
+        else: # 默认的自动
+            l = len(image_urls)
+            if l == 0:
+                raise ValueError(&#39;此用户没有发布图片！&#39;)
+            threads = math.ceil(l/6)
+            if threads &gt; 10:
+                threads = 10
+        
+        def download_image():
+            try:
+                url = image_urls.pop()
+            except IndexError:
+                sys.exit()
+            print(&#39;正在下载&#39;, url)
+            filename = re.findall(r&#39;\d+\.jpg&#39;, url)[0] # `&lt;https://tuchong.pstatp.com/&lt;user_id&gt;/f/&lt;image_id&gt;.jpg
+            # urllib.request.urlretrieve(url, &#39;img/&#39; + self.username + &#39;-&#39; + str(i) + &#39;.jpg&#39;)
+            with open(path + filename, &#39;wb&#39;) as img:
+                img.write(requests.get(url).content)
+            download_image()
+            
+
+        t_s = []
+
+        for i in range(threads):
+            t = threading.Thread(target=download_image)
+            t_s.append(t)
+        for t in t_s:
+            t.start()
+        for t in t_s:
+            t.join()
+
+        print(&#39;完成。&#39;)</code></pre>
+</div>
+</div>
+<div class="section level2">
+<h2>获取信息</h2>
+<p>可以使用三个二维的表格描述一个用户和它所有作品信息。</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>事实上，以<code>.jpg</code>和<code>.webp</code>结尾的同id链接都可以打开。在chrome中访问<code>https://tuchong.com/rest/2/sites/&lt;user_id&gt;/posts?page=&lt;n&gt;</code> 所返回的json中图片链接的格式是<code>webp</code>，因为这种Google发明的图片格式在chrome中被支持，在python requests中返回的json中则是以<code>.jpg</code>结尾的）<a href="#fnref1" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="../../../../index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="../../../../images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="../../../../js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+
