@@ -12,7 +12,7 @@ def _run_threads(n, target):
     for t in t_s:
         t.start()
     for t in t_s:
-        t.join
+        t.join()
 
 def _suggest_threads(tasks, tasks_per_thread):
     threads = math.ceil(tasks/tasks_per_thread)

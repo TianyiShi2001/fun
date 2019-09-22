@@ -65,7 +65,8 @@ class TuchongUser(object):
         path = self._mkdir('data')
         path += 'author_info'
 
-        author_info = [self.user_id, self.username, self.followers]
+        author_info = [{'user_id':self.user_id, 'username':self.username, 'followers':self.followers}]
+
         if out is None:
             print('完成。')
             return author_info
@@ -76,9 +77,10 @@ class TuchongUser(object):
         elif out == 'csv':
             path += '.csv'
             with open(path, 'w') as fp:
-                writer = csv.writer(fp)
-                writer.writerow(['user_id', 'username', 'followers'])
-                writer.writerow(author_info)
+                fp.write('#' + time.strftime('%Y-%m-%d') + '\n')
+                writer = csv.DictWriter(fp, fieldnames = author_info[0].keys())
+                writer.writeheader() # write head
+                writer.writerows(author_info)
         print('数据已写入' + path)
 
     def get_post_info(self, out = None):
@@ -89,11 +91,11 @@ class TuchongUser(object):
         path += 'post_info'
 
         post_info = [] # a list containing dicts of individual post info
-        field = ['post_id', 'author_id', 'published_at', 'image_count', 'favorites', 'comments']
+        field = ['author_id', 'post_id', 'title', 'excerpt', 'published_at', 'image_count', 'favorites', 'comments']
         for post in self.post_list:
-            new_post_info = [] # every individual is a list
-            for item in field:
-                new_post_info.append(post[item])
+            new_post_info = {} # every individual is a dict
+            for key in field:
+                new_post_info.update({key:post[key]})
             post_info.append(new_post_info)
         if out is None:
             print('完成。')
@@ -106,10 +108,9 @@ class TuchongUser(object):
             path += '.csv'
             with open(path, 'w') as fp:
                 fp.write('#' + time.strftime('%Y-%m-%d') + '\n')
-                writer = csv.writer(fp) # write head
-                writer.writerow(field)
-                for individual in post_info: # every individual is a list
-                    writer.writerow(individual)
+                writer = csv.DictWriter(fp, fieldnames = field)
+                writer.writeheader() # write head
+                writer.writerows(post_info)
         print('数据已写入' + path)
 
     def get_tag_info(self, out = None):
@@ -118,11 +119,10 @@ class TuchongUser(object):
         print('正在提取用户"' + self.username + '"的各个tag信息...')
         path = self._mkdir('data')
         path += 'tag_info'
-
+        
         tag_info = []
         for post in self.post_list:
-            for tag in post['tags']:
-                tag_info.append([post['post_id'], tag['tag_name']]) # append instances in the form of [post_id, tag_name]
+            tag_info.append({'post_id':post['post_id'], 'tags':list(map(lambda t: t['tag_name'], post['tags']))}) 
         if out is None:
             return tag_info
         elif out == 'json':
@@ -131,6 +131,10 @@ class TuchongUser(object):
                 json.dump(tag_info, fp)
         elif out == 'csv':
             path += '.csv'
+            tag_info = []
+            for post in self.post_list:
+                for tag in post['tags']:
+                    tag_info.append([post['post_id'], tag['tag_name']]) # append instances in the form of [post_id, tag_name]
             with open(path, 'w') as fp:
                 fp.write('#' + time.strftime('%Y-%m-%d') + '\n')
                 writer = csv.writer(fp)
