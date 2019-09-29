@@ -171,7 +171,7 @@ class TuchongQuery(object):
                     image_url = image['source']['lr'] # e.g. https://tuchong.pstatp.com/33937/lr/397648555.jpg
                     image_url = re.sub('/lr/', '/f/', image_url) # convert to 'full' size
                     this_post_urls.append(image_url)
-                id = str(post['favorites']) + '-' + post['site']['name'] + '-' + post["published_at"][0:10] # 获赞数放在前面
+                id = str(post['favorites']) + '-' + post['site']['name'] + '-' + '-' + post['post_id'] + post["published_at"][0:10] # 获赞数放在前面
                 id_and_image_urls.update({id:this_post_urls})
             print('完成。')
             return id_and_image_urls
@@ -181,7 +181,7 @@ class TuchongQuery(object):
             print('完成。')
             return image_urls
 
-    def get_images(self, min_fav = None, threads = 'auto', sort = True):
+    def get_images(self, min_fav = None, threads = 'auto', sort = True, txt = True):
         path = self._mkdir('img')
 
         if sort:
@@ -191,6 +191,7 @@ class TuchongQuery(object):
             else:
                 threads = _suggest_threads(len(id_and_urls), 3)
             def download_post(path = path):
+                nonlocal id_and_urls
                 try:
                      this_post = id_and_urls.popitem()
                 except KeyError: # when dict is empty
@@ -201,10 +202,12 @@ class TuchongQuery(object):
                 path = path + id + '/'
                 if not os.path.exists(path):
                     os.mkdir(path)
+                # txt_path = path + id + '.txt'
                 for i, url in enumerate(url_s, start=1):
-                        img_path = path + str(i) + '.jpg'
-                        _save_img(url, img_path)
-                        print(i, '/', total, ' of post ', id, ' from ', threading.current_thread().name, sep='')
+                    img_path = path + str(i) + '.jpg'
+                    _save_img(url, img_path)
+                    print(i, '/', total, ' of post ', id, ' from ', threading.current_thread().name, sep='')
+                    # with open()
                 download_post() # 递归
             # 多线程
             _run_threads(n = threads, target=download_post)
@@ -338,9 +341,52 @@ class TuchongTag(TuchongQuery):
         
         cloud.generate(txt).to_file(path)
         print('词云已写入' + path)
+
+    def get_image_urls(self, sort = True, min_fav = None):
+        print('正在提取与"' + self.query + '"相关的所有图片链接...')
+        post_list = self.post_list
+        if min_fav:
+            post_list = list(filter(lambda post:post['favorites']>=min_fav, self.post_list))
+        if sort:
+            id_and_image_urls = {}
+            for post in post_list:
+                this_post_urls = [] # each post can have multiple images
+                for image in post['images']: # looping over the list of images of this post
+                    image_id = image['img_id_str'] 
+                    image_url = 'https://tuchong.pstatp.com/' + post['author_id'] + '/lr/' + image_id + '.jpg' # e.g. https://tuchong.pstatp.com/33937/lr/397648555.jpg
+                    this_post_urls.append(image_url)
+                id = str(post['favorites']) + '-' + post['author_id'] + '-' + post['post_id'] + '-' + post["published_at"][0:10] # 获赞数放在前面
+                id_and_image_urls.update({id:this_post_urls})
+            print('完成。')
+            return id_and_image_urls
+        else:
+            pass
+            image_urls = re.findall("'lr': '(.+?)',", str(post_list))
+            image_urls = list(map(lambda image_url:re.sub('/lr/', '/f/', image_url), image_urls))
+            print('完成。')
+            return image_urls
+
+    def get_html(self, min_fav = None):
+        id_and_urls = self.get_image_urls(min_fav = min_fav)
+        path = self._mkdir('img')
+        path += 'ranked.html'
+        HTML = '<head>\n\t<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">\n</head>\n<body>\n<div class="container">\n<meta charset="utf-8">'
+        for id in sorted(id_and_urls.keys(), key=lambda id: int(str(id).split('-', 3)[0]), reverse=True):
+            url_s = id_and_urls[id]
+            fav, author_id, post_id, time = id.split('-', maxsplit=3)
+            URL = 'https://tuchong.com/' + author_id + '/' + post_id
+            new = f'\t<h2>获赞：{fav}  时间：{time}</h2>\n\t<h3><a href="{URL}">源链接</a></h3>\n'
+            for url in url_s:
+                new += f'\t\t<img src="{url}">\n'
+            HTML += new
+        HTML += '<div>\n</body>'
+        with open(path, 'w') as fp:
+            fp.write(HTML)
+
+    
     
 if __name__ == "__main__":
     q = input('你想搜索的标签是？')
-    t = TuchongTag(q, 'daily')
-    t.get_all_info()
-    # t.get_images(min_fav=20, sort=True)
+    t = TuchongTag(q, 'weekly')
+    # t.get_all_info()
+    t.get_html(min_fav=100)
