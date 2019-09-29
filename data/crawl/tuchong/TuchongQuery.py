@@ -370,7 +370,7 @@ class TuchongTag(TuchongQuery):
         id_and_urls = self.get_image_urls(min_fav = min_fav)
         path = self._mkdir('img')
         path += 'ranked.html'
-        HTML = '<head>\n\t<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">\n</head>\n<body>\n<div class="container">\n<meta charset="utf-8">'
+        HTML = '<head>\n\t<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">\n<meta charset="utf-8">\n</head>\n<body>\n<div class="container">\n'
         for id in sorted(id_and_urls.keys(), key=lambda id: int(str(id).split('-', 3)[0]), reverse=True):
             url_s = id_and_urls[id]
             fav, author_id, post_id, time = id.split('-', maxsplit=3)
