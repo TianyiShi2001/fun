@@ -377,7 +377,7 @@ class TuchongTag(TuchongQuery):
             URL = 'https://tuchong.com/' + author_id + '/' + post_id
             new = f'\t<h2>获赞：{fav}  时间：{time}</h2>\n\t<h3><a href="{URL}">源链接</a></h3>\n'
             for url in url_s:
-                new += f'\t\t<img src="{url}">\n'
+                new += f'\t\t<img class="img-fluid" src="{url}">\n'
             HTML += new
         HTML += '<div>\n</body>'
         with open(path, 'w') as fp:
